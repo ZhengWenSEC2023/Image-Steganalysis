@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="18e1c98d-080d-472b-ad6b-05dd76c61ce7" name="MCL (project level)" url="">
+        <fileTransfer rootFolder="/mnt/zhengwen/image_steganalysis/dataset/codes" accessType="SFTP" host="mcl-server.usc.edu" port="500" sshConfigId="5d0664b0-7d62-4a95-92b3-54121a570ef6" sshConfig="MCL">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
