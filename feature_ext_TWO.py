@@ -61,7 +61,7 @@ def diff_sample(diff_maps):
     return np.array(new_diff_maps)
 
 
-F_TRAIN_NUM_TOTAL = 2500
+F_TRAIN_NUM_TOTAL = 2000
 # f = open("PixelHopUniform.pkl", 'rb')  # 3 PixelHop, win: 5, TH1:0.005, TH2:0.005, CH1: 15, CH2: 20, CH3: 25, TRAIN_TOTAL=500
 f = open("PixelHopUniform_4PH.pkl", 'rb')
 p2 = pickle.load(f)
@@ -73,6 +73,7 @@ ori_img_path = r'/mnt/zhengwen/new_trial/BOSSbase_resize'
 steg_img_path = r'/mnt/zhengwen/new_trial/BOSSbase_S_UNIWARD_05'
 file_names = os.listdir(ori_img_path)
 file_names.sort(key=lambda x: int(x[:-4]))
+
 count = 0
 for file_name in file_names:
     ori_img = cv2.imread(os.path.join(ori_img_path, file_name), 0)[:, :, None]
