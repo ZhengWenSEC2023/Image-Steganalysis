@@ -6,8 +6,8 @@ from skimage.util import view_as_windows
 import os
 
 #########################################################
-#   STEP 2: EXTRACT FEATURES BY TRAINED PIXELHOPP UNIT  #
-#            TRAINED PIXELHOP UNIT IS SAVED             #
+#   STEP 2: EXTRACT FEATURES BY TRAINED PIXELHOP UNIT   #
+#     EXTRACT FEATURES BY THE TRAINED PIXELHOP UNIT     #
 #########################################################
 
 def Shrink(X, shrinkArg, max_pooling=True, padding=True):
@@ -62,7 +62,7 @@ def diff_sample(diff_maps):
 
 
 F_TRAIN_NUM_TOTAL = 2500
-# f = open("PixelHopUniform.pkl", 'rb')  # 3 PixelHop, win: 5, TH1:0.005, TH2:0.005, CH1: 15, CH2: 20, CH3: 25
+# f = open("PixelHopUniform.pkl", 'rb')  # 3 PixelHop, win: 5, TH1:0.005, TH2:0.005, CH1: 15, CH2: 20, CH3: 25, TRAIN_TOTAL=500
 f = open("PixelHopUniform_4PH.pkl", 'rb')
 p2 = pickle.load(f)
 f.close()

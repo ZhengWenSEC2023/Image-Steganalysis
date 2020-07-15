@@ -12,7 +12,7 @@ from skimage.util import view_as_windows
 #########################################################
 
 
-P_TRAIN_NUM_TOTAL = 2500
+P_TRAIN_NUM_TOTAL = 1500
 print(P_TRAIN_NUM_TOTAL)
 np.random.seed(23)
 ori_train_img = []
@@ -69,10 +69,10 @@ SaabArgs = [{'num_AC_kernels': -1, 'needBias': True, 'useDC': True, 'batch': Non
             {'num_AC_kernels': -1, 'needBias': True, 'useDC': True, 'batch': None},
             {'num_AC_kernels': -1, 'needBias': True, 'useDC': True, 'batch': None},
             {'num_AC_kernels': -1, 'needBias': True, 'useDC': True, 'batch': None}]
-shrinkArgs = [{'func': Shrink, 'win': 9},
-              {'func': Shrink, 'win': 9},
-              {'func': Shrink, 'win': 9},
-              {'func': Shrink, 'win': 9}]
+shrinkArgs = [{'func': Shrink, 'win': 5},
+              {'func': Shrink, 'win': 5},
+              {'func': Shrink, 'win': 5},
+              {'func': Shrink, 'win': 5}]
 concatArg = {'func': Concat}
 
 # PixlHop ++
@@ -81,7 +81,7 @@ p2 = Pixelhop2(depth=4, TH1=0.005, TH2=0.0005, SaabArgs=SaabArgs, shrinkArgs=shr
 
 p2.construct_count()
 
-# f = open("PixelHopUniform.pkl", 'wb')  # 3 PixelHop, win: 5, TH1:0.005, TH2:0.005, CH1: 15, CH2: 20, CH3: 25
+# f = open("PixelHopUniform.pkl", 'wb')  # 3 PixelHop, win: 5, TH1:0.005, TH2:0.005, CH1: 15, CH2: 20, CH3: 25, NUM_TRAIN=500
 f = open("PixelHopUniform_4PH.pkl", 'wb')
 pickle.dump(p2, f)
 f.close()

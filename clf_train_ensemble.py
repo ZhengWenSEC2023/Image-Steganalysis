@@ -8,6 +8,11 @@ from skimage.measure import block_reduce
 from skimage.util import view_as_windows
 from sklearn.svm import SVC
 
+#########################################################
+#    STEP 3: ENSEMBLE CLASSIFIER BEHIND EACH PIXELHOP   #
+#      A LIST OF TRAINED XGBOOST CLASSIFIER IS SAVED    #
+#########################################################
+
 
 def Shrink(X, shrinkArg, max_pooling=True, padding=True):
     if max_pooling:
@@ -41,12 +46,12 @@ def context_resize(context):
     new_context = np.moveaxis(new_context, 1, -1)
     return new_context
 
-f = open("PixelHopUniform.pkl", 'rb')
+f = open("PixelHopUniform_PH4.pkl", 'rb')
 p2 = pickle.load(f)
 f.close()
 
-train_f_ori_vectors = np.load("week8_train_ori_feature_vec.npy")
-train_f_steg_vectors = np.load("week8_train_steg_feature_vec.npy")
+train_f_ori_vectors = np.load("week8_train_ori_feature_vec_PH4.npy")
+train_f_steg_vectors = np.load("week8_train_steg_feature_vec_PH4.npy")
 
 counts = p2.counts
 for i in range(1, len(counts)):
@@ -60,11 +65,10 @@ params = {
     'learning_rate':    [0.1, 0.01, 0.2]
 }
 
-folds = 4
+folds = 5
 param_comb = 20
 clf_list = []
 np.random.seed(23)
-
 
 for i in range(len(counts)):
     train_ori_vec = train_f_ori_vectors[:, counts[i][0]: counts[i][-1]]
@@ -84,7 +88,8 @@ for i in range(len(counts)):
     random_search.fit(train_sample, train_label)
     clf_list.append(random_search.best_estimator_)
 
-f = open("ensemble_clf.pkl", "wb")
+# f = open("ensemble_clf.pkl", "wb")  # for 3 pixelHOP with 1000 training samples
+f = open("ensemble_clf_PH4.pkl", "wb")
 pickle.dump(clf_list, f)
 f.close()
 
