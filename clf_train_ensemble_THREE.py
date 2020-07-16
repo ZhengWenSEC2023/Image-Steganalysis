@@ -46,16 +46,12 @@ def context_resize(context):
     new_context = np.moveaxis(new_context, 1, -1)
     return new_context
 
-f = open("PixelHopUniform_PH4.pkl", 'rb')
+f = open("PixelHopUniform_4PH.pkl", 'rb')
 p2 = pickle.load(f)
 f.close()
 
 train_f_ori_vectors = np.load("week8_train_ori_feature_vec_PH4.npy")
 train_f_steg_vectors = np.load("week8_train_steg_feature_vec_PH4.npy")
-
-counts = p2.counts
-for i in range(1, len(counts)):
-    counts[i] += counts[i - 1][-1]
 
 params = {
     'min_child_weight': [1, 2, 4, 5, 6, 7, 8, 10, 11, 14, 15, 17, 21],
@@ -66,19 +62,20 @@ params = {
 }
 
 folds = 5
-param_comb = 20
+param_comb = 10
 clf_list = []
 np.random.seed(23)
 
-for i in range(len(counts)):
-    train_ori_vec = train_f_ori_vectors[:, counts[i][0]: counts[i][-1]]
-    train_steg_vec = train_f_steg_vectors[:, counts[i][0]: counts[i][-1]]
+channel_range = [0, 15, 15+22, 15+22+28, 15+22+28+39]
+for i in range(1, len(channel_range)):
+    print(i)
+    train_ori_vec = train_f_ori_vectors[:, channel_range[i - 1]: channel_range[i]]
+    train_steg_vec = train_f_steg_vectors[:, channel_range[i - 1]: channel_range[i]]
     train_sample = np.concatenate((train_ori_vec, train_steg_vec), axis=0)
     train_label = np.concatenate((0 * np.ones(len(train_ori_vec)), 1 * np.ones(len(train_steg_vec))), axis=0)
     idx = np.random.permutation(len(train_sample))
     train_sample = train_sample[idx]
     train_label = train_label[idx]
-
     # XGB
     xgb = XGBClassifier()
     # K-Fold
@@ -87,6 +84,7 @@ for i in range(len(counts)):
                                        n_jobs=-1, cv=skf.split(train_sample, train_label), random_state=1001)
     random_search.fit(train_sample, train_label)
     clf_list.append(random_search.best_estimator_)
+    print("end", i)
 
 # f = open("ensemble_clf.pkl", "wb")  # for 3 pixelHOP with 1000 training samples
 f = open("ensemble_clf_PH4.pkl", "wb")

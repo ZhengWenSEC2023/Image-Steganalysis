@@ -62,6 +62,7 @@ def diff_sample(diff_maps):
 
 
 F_TRAIN_NUM_TOTAL = 2000
+F_TRAIN_NUM_UNCHANGED = 7500000
 # f = open("PixelHopUniform.pkl", 'rb')  # 3 PixelHop, win: 5, TH1:0.005, TH2:0.005, CH1: 15, CH2: 20, CH3: 25, TRAIN_TOTAL=500
 f = open("PixelHopUniform_4PH.pkl", 'rb')
 p2 = pickle.load(f)
@@ -89,17 +90,19 @@ f_ori_train_img = np.array(f_ori_train_img)
 f_steg_train_img = np.array(f_steg_train_img)
 diff_map = np.squeeze(f_ori_train_img.astype("double") - f_steg_train_img.astype("double"))
 
-f_ori_context = p2.transform(f_ori_train_img)
+# f_ori_context = p2.transform(f_ori_train_img)
+
 f_steg_context = p2.transform(f_steg_train_img)
 counts = p2.counts
 
-f_ori_context_1 = f_ori_context[0]
-f_ori_context_2 = f_ori_context[1]
-f_ori_context_3 = f_ori_context[2]
-f_ori_context_4 = f_ori_context[3]
-f_ori_context_2 = context_resize(f_ori_context_2)
-f_ori_context_3 = context_resize(f_ori_context_3)
-f_ori_context_4 = context_resize(f_ori_context_4)
+# f_ori_context_1 = f_ori_context[0]
+# f_ori_context_2 = f_ori_context[1]
+# f_ori_context_3 = f_ori_context[2]
+# f_ori_context_4 = f_ori_context[3]
+# f_ori_context_2 = context_resize(f_ori_context_2)
+# f_ori_context_3 = context_resize(f_ori_context_3)
+# f_ori_context_4 = context_resize(f_ori_context_4)
+# del f_ori_context
 
 f_steg_context_1 = f_steg_context[0]
 f_steg_context_2 = f_steg_context[1]
@@ -108,14 +111,28 @@ f_steg_context_4 = f_steg_context[3]
 f_steg_context_2 = context_resize(f_steg_context_2)
 f_steg_context_3 = context_resize(f_steg_context_3)
 f_steg_context_4 = context_resize(f_steg_context_4)
+del f_steg_context
 
-train_f_ori_context = np.concatenate((f_ori_context_1, f_ori_context_2, f_ori_context_3, f_ori_context_4), axis=-1)
+# train_f_ori_context = np.concatenate((f_ori_context_1, f_ori_context_2, f_ori_context_3, f_ori_context_4), axis=-1)
 train_f_steg_context = np.concatenate((f_steg_context_1, f_steg_context_2, f_steg_context_3, f_steg_context_4), axis=-1)
 
 diff_map = diff_sample(diff_map)
 
-train_f_ori_vectors = train_f_ori_context[diff_map != 0]
+# train_f_ori_vectors = train_f_ori_context[diff_map != 0]
 train_f_steg_vectors = train_f_steg_context[diff_map != 0]
+
+SUB_IMAGE = 250
+# train_f_ori_vectors_unchanged = train_f_ori_context[:SUB_IMAGE][diff_map[:SUB_IMAGE] == 0]
+# idx = np.random.permutation(len(train_f_ori_vectors_unchanged))
+# train_f_ori_vectors_unchanged = train_f_ori_vectors_unchanged[idx][:F_TRAIN_NUM_UNCHANGED]
+# np.save("ori_unchanged_vector.npy", train_f_ori_vectors_unchanged)
+
+train_f_steg_vectors_unchanged = train_f_steg_context[:SUB_IMAGE][diff_map[:SUB_IMAGE] == 0]
+idx = np.random.permutation(len(train_f_steg_vectors_unchanged))
+train_f_steg_vectors_unchanged = train_f_steg_vectors_unchanged[idx][:F_TRAIN_NUM_UNCHANGED]
+np.save("steg_unchanged_vector.npy", train_f_steg_vectors_unchanged)
+
+
 
 # SAVE
 
@@ -130,18 +147,19 @@ train_f_steg_vectors = train_f_steg_context[diff_map != 0]
 # np.save("week8_train_ori_feature_vec.npy", train_f_ori_vectors)
 # np.save("week8_train_steg_feature_vec.npy", train_f_steg_vectors)
 
-np.save("week8_train_ori_context_1_PH4.npy", f_ori_context_1)
-np.save("week8_train_ori_context_2_PH4.npy", f_ori_context_2)
-np.save("week8_train_ori_context_3_PH4.npy", f_ori_context_3)
-np.save("week8_train_ori_context_4_PH4.npy", f_ori_context_4)
+# np.save("week8_train_ori_context_1_PH4.npy", f_ori_context_1)
+# np.save("week8_train_ori_context_2_PH4.npy", f_ori_context_2)
+# np.save("week8_train_ori_context_3_PH4.npy", f_ori_context_3)
+# np.save("week8_train_ori_context_4_PH4.npy", f_ori_context_4)
 np.save("week8_train_steg_context_1_PH4.npy", f_steg_context_1)
 np.save("week8_train_steg_context_2_PH4.npy", f_steg_context_2)
 np.save("week8_train_steg_context_3_PH4.npy", f_steg_context_3)
 np.save("week8_train_steg_context_4_PH4.npy", f_steg_context_4)
-np.save("week8_diff_map_train_PH4.npy", diff_map)
+# np.save("week8_diff_map_train_SAMPLED_PH4.npy", diff_map)
 
-np.save("week8_train_ori_feature_vec_PH4.npy", train_f_ori_vectors)
 np.save("week8_train_steg_feature_vec_PH4.npy", train_f_steg_vectors)
+# np.save("week8_train_ori_feature_vec_PH4.npy", train_f_ori_vectors)
+
 
 # LOAD
 
@@ -152,10 +170,10 @@ np.save("week8_train_steg_feature_vec_PH4.npy", train_f_steg_vectors)
 # f_steg_context_2 = np.load("week8_train_steg_context_2.npy")
 # f_steg_context_3 = np.load("week8_train_steg_context_3.npy")
 
-# f_ori_context_1 = np.load("week8_train_ori_context_1_PH4.npy")
-# f_ori_context_2 = np.load("week8_train_ori_context_2_PH4.npy")
-# f_ori_context_3 = np.load("week8_train_ori_context_3_PH4.npy")
-# f_ori_context_4 = np.load("week8_train_ori_context_4_PH4.npy")
+f_ori_context_1 = np.load("week8_train_ori_context_1_PH4.npy")
+f_ori_context_2 = np.load("week8_train_ori_context_2_PH4.npy")
+f_ori_context_3 = np.load("week8_train_ori_context_3_PH4.npy")
+f_ori_context_4 = np.load("week8_train_ori_context_4_PH4.npy")
 # f_steg_context_1 = np.load("week8_train_steg_context_1_PH4.npy")
 # f_steg_context_2 = np.load("week8_train_steg_context_2_PH4.npy")
 # f_steg_context_3 = np.load("week8_train_steg_context_3_PH4.npy")
