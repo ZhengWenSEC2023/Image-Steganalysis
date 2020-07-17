@@ -13,6 +13,8 @@ from sklearn.svm import SVC
 #      A LIST OF TRAINED XGBOOST CLASSIFIER IS SAVED    #
 #########################################################
 
+CHANNEL_RANGE = [0, 15, 15 + 22, 15 + 22 + 28, 15 + 22 + 28 + 39]
+
 
 def Shrink(X, shrinkArg, max_pooling=True, padding=True):
     if max_pooling:
@@ -66,11 +68,10 @@ param_comb = 10
 clf_list = []
 np.random.seed(23)
 
-channel_range = [0, 15, 15+22, 15+22+28, 15+22+28+39]
-for i in range(1, len(channel_range)):
+for i in range(1, len(CHANNEL_RANGE)):
     print(i)
-    train_ori_vec = train_f_ori_vectors[:, channel_range[i - 1]: channel_range[i]]
-    train_steg_vec = train_f_steg_vectors[:, channel_range[i - 1]: channel_range[i]]
+    train_ori_vec = train_f_ori_vectors[:, CHANNEL_RANGE[i - 1]: CHANNEL_RANGE[i]]
+    train_steg_vec = train_f_steg_vectors[:, CHANNEL_RANGE[i - 1]: CHANNEL_RANGE[i]]
     train_sample = np.concatenate((train_ori_vec, train_steg_vec), axis=0)
     train_label = np.concatenate((0 * np.ones(len(train_ori_vec)), 1 * np.ones(len(train_steg_vec))), axis=0)
     idx = np.random.permutation(len(train_sample))
