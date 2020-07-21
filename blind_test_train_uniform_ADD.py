@@ -91,6 +91,17 @@ f = open("final_XG_BOOST", "rb")
 svm_best = pickle.load(f)
 f.close()
 
+ori_score = svm_best.score(ori_prob, 0 * np.ones(len(ori_prob)))
+ori_label = svm_best.predict(ori_prob)
+steg_score = svm_best.score(steg_prob, 0 * np.ones(len(steg_prob)))
+steg_label = svm_best.predict(steg_prob)
+
+percentage_ori = []
+percentage_steg = []
+for i in range(100):
+    percentage_ori.append(np.sum(ori_label[i * 256 * 256: (i + 1) * 256 * 256] == 0) / (256*256))
+    percentage_steg.append(np.sum(steg_label[i * 256 * 256: (i + 1) * 256 * 256] == 0) / (256*256))
+
 print("DENOTING THE PERCENTAGE OF SELECTED POINTS")
 print("UNIFORM UNCHANGED ORI SCORE (COMPARED WITH TOTAL 0):", svm_best.score(ori_prob, 0 * np.ones(len(ori_prob))))
 print("UNIFORM UNCHANGED ORI SCORE (COMPARED WITH TOTAL 0):", svm_best.score(steg_prob, 0 * np.ones(len(steg_prob))))

@@ -73,9 +73,6 @@ f_steg_img = np.array(f_steg_img)
 diff_map = np.squeeze(f_ori_img.astype("double") - f_steg_img.astype("double"))
 
 f_ori_context = p2.transform(f_ori_img)
-f_steg_context = p2.transform(f_steg_img)
-counts = p2.counts
-
 f_ori_context_1 = f_ori_context[0]
 f_ori_context_2 = f_ori_context[1]
 f_ori_context_3 = f_ori_context[2]
@@ -91,6 +88,7 @@ del f_ori_context_2
 del f_ori_context_3
 del f_ori_context_4
 
+f_steg_context = p2.transform(f_steg_img)
 f_steg_context_1 = f_steg_context[0]
 f_steg_context_2 = f_steg_context[1]
 f_steg_context_3 = f_steg_context[2]
@@ -109,12 +107,13 @@ del f_steg_context_4
 NUM_CHANGED_POINTS = 500000
 NUM_UNCHANGED_POINTS = 4500000
 
-unchanged_context = np.concatenate((ori_context[diff_map != 0], steg_context[diff_map != 0]), axis=0)
+unchanged_context = np.concatenate((ori_context[diff_map == 0], steg_context[diff_map == 0]), axis=0)
 np.random.shuffle(unchanged_context)
-unchanged_context = unchanged_context[:NUM_CHANGED_POINTS]
-changed_context = np.concatenate((ori_context[diff_map == 0], steg_context[diff_map == 0]), axis=0)[:NUM_UNCHANGED_POINTS]
+unchanged_context = unchanged_context[:NUM_UNCHANGED_POINTS]
+
+changed_context = np.concatenate((ori_context[diff_map != 0], steg_context[diff_map != 0]), axis=0)[:NUM_CHANGED_POINTS]
 np.random.shuffle(changed_context)
-changed_context = changed_context[:NUM_UNCHANGED_POINTS]
+changed_context = changed_context[:NUM_CHANGED_POINTS]
 
 del ori_context
 del steg_context
