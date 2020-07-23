@@ -13,7 +13,7 @@ from sklearn.svm import SVC
 #      A LIST OF TRAINED XGBOOST CLASSIFIER IS SAVED    #
 #########################################################
 
-CHANNEL_RANGE = [0, 15, 15 + 22, 15 + 22 + 28, 15 + 22 + 28 + 39]
+CHANNEL_RANGE = [0, 25 * 9, 25 * 9 + 22, 25 * 9 + 22 + 28, 25 * 9 + 22 + 28 + 39]
 
 
 def Shrink(X, shrinkArg, max_pooling=True, padding=True):
