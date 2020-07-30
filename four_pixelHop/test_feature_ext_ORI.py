@@ -4,7 +4,7 @@ import cv2
 from skimage.measure import block_reduce
 from skimage.util import view_as_windows
 import os
-from feature_ext_TWO import context_resize
+from four_pixelHop.feature_ext_TWO import context_resize
 
 def Shrink(X, shrinkArg, max_pooling=True, padding=True):
     if max_pooling:
