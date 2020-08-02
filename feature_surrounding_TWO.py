@@ -8,6 +8,7 @@ from xgboost import XGBClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import StratifiedKFold
 from scipy import stats
+import gc
 
 #########################################################
 #   STEP 2: EXTRACT FEATURES BY TRAINED PIXELHOP UNIT   #
@@ -69,17 +70,19 @@ def diff_sample(diff_maps):
 F_TRAIN_NUM_TOTAL = 1500
 F_TRAIN_NUM_UNCHANGED = 7500000
 NUM_VECTOR = 300000
+channels = [3, 7, 14, 20, 22, 23, 25, 26, 27, 33, 40, 46, 47, 48, 51, 52,
+            58, 68, 71, 76, 77, 80]
 
 # f = open("PixelHopUniform.pkl", 'rb')  # 3 PixelHop, win: 5, TH1:0.005, TH2:0.005, CH1: 15, CH2: 20, CH3: 25, TRAIN_TOTAL=500
 # f = open("PixelHopUniform_singPH.pkl", 'rb')  # 9 * 9
-f = open("/mnt/zhengwen/image_steganalysis/dataset/codes/PixelHopUniform_singPH_7_7_reverse.pkl", 'rb')
+f = open("/mnt/zhengwen/image_steganalysis/dataset/codes/PixelHopUniform_singPH.pkl", 'rb')
 p2 = pickle.load(f)
 f.close()
 
 f_ori_train_img = []
 f_steg_train_img = []
-ori_img_path = r'/mnt/zhengwen/new_trial/BOSSbase_reverse'
-steg_img_path = r'/mnt/zhengwen/new_trial/BOSSbase_S_UNIWARD_05_reverse'
+ori_img_path = r'/mnt/zhengwen/new_trial/BOSSbase_resize'
+steg_img_path = r'/mnt/zhengwen/new_trial/BOSSbase_S_UNIWARD_05'
 file_names = os.listdir(ori_img_path)
 file_names.sort(key=lambda x: int(x[:-4]))
 
@@ -98,12 +101,13 @@ f_ori_train_img = np.array(f_ori_train_img)
 f_steg_train_img = np.array(f_steg_train_img)
 diff_map = np.squeeze(f_ori_train_img.astype("double") - f_steg_train_img.astype("double"))
 f_ori_context = p2.transform(f_ori_train_img)
+# np.save("conpare_features.npy", f_ori_context)
 f_steg_context = p2.transform(f_steg_train_img)
 counts = p2.counts
 diff_map = diff_sample(diff_map)
 
-f_ori_context_0 = f_ori_context[0][:, :, :, 1:]
-f_steg_context_0 = f_steg_context[0][:, :, :, 1:]
+f_ori_context_0 = f_ori_context[0][:, :, :, channels]
+f_steg_context_0 = f_steg_context[0][:, :, :, channels]
 
 ori_feature_1 = []
 stego_feature_1 = []
@@ -141,8 +145,8 @@ stego_feature_1 = np.array(stego_feature_1)
 # np.save("week8_train_ori_context_1_PH4_RETRAINED_7_7_reverse.npy", ori_feature_1)     # 7 * 7
 # np.save("week8_train_steg_context_1_PH4_RETRAINED_7_7_reverse.npy", stego_feature_1)  # 7 * 7
 
-np.save("week8_train_ori_context_1_PH4_RETRAINED_7_7_reverse.npy", ori_feature_1)
-np.save("week8_train_steg_context_1_PH4_RETRAINED_7_7_reverse.npy", stego_feature_1)
+np.save("week8_train_ori_context_1_PH4_RETRAINED_with_selection.npy", ori_feature_1)
+np.save("week8_train_steg_context_1_PH4_RETRAINED_with_selection.npy", stego_feature_1)
 
 #########
 # S & L #
@@ -215,7 +219,7 @@ xgb.fit(train_sample, train_label)
 print("TRAIN SCORE:", xgb.score(train_sample, train_label))
 
 # f = open("single_singPH1_7_7.pkl", "wb") # single clf instead of each pixelhop
-f = open("single_singPH1_7_7_reverse.pkl", "wb") # single clf instead of each pixelhop
+f = open("single_singPH1_with_selection.pkl", "wb") # single clf instead of each pixelhop
 pickle.dump(xgb, f)
 f.close()
 

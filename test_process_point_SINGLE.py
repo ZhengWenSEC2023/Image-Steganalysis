@@ -3,16 +3,18 @@ import numpy as np
 import cv2
 from skimage.measure import block_reduce
 from skimage.util import view_as_windows
-from sklearn.svm import SVC
+import os
+from xgboost import XGBClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import StratifiedKFold
-from xgboost import XGBClassifier
+from scipy import stats
 
-#################################################################
-#   STEP 4: USE SVM TO ENSEMBLE THE RESULT OF PROBABILITY VEC   #
-# A TRAINED SVM IS SAVED AND TRAIN SCORE && TEST SCORE IS GIVEN #
-#################################################################
-def Shrink(X, shrinkArg, max_pooling=True, padding=True):
+#########################################################
+#   STEP 2: EXTRACT FEATURES BY TRAINED PIXELHOP UNIT   #
+#     EXTRACT FEATURES BY THE TRAINED PIXELHOP UNIT     #
+#########################################################
+
+def Shrink(X, shrinkArg, max_pooling=False, padding=True):
     if max_pooling:
         X = block_reduce(X, (1, 2, 2, 1), np.max)
     win = shrinkArg['win']
@@ -27,6 +29,24 @@ def Shrink(X, shrinkArg, max_pooling=True, padding=True):
     X = view_as_windows(new_X, (1, win, win, 1))
     X = X.reshape(X.shape[0], X.shape[1], X.shape[2], -1)
     return X
+
+
+# example callback function for how to concate features from different hops
+def Concat(X, concatArg):
+    return X
+
+
+def context_resize(context):
+    context = np.moveaxis(context, -1, 1)
+    new_context = []
+    for i in range(context.shape[0]):
+        for j in range(context.shape[1]):
+            new_context.append(cv2.resize(context[i, j], (256, 256), interpolation=cv2.INTER_NEAREST))
+    new_context = np.array(new_context)
+    new_context = np.reshape(new_context, (context.shape[0], context.shape[1], 256, 256))
+    new_context = np.moveaxis(new_context, 1, -1)
+    return new_context
+
 
 def diff_sample(diff_maps):
     win = 10
@@ -45,71 +65,137 @@ def diff_sample(diff_maps):
         new_diff_maps.append(diff_map)
     return np.array(new_diff_maps)
 
-# example callback function for how to concate features from different hops
-def Concat(X, concatArg):
-    return X
+
+# f = open("PixelHopUniform.pkl", 'rb')  # 3 PixelHop, win: 5, TH1:0.005, TH2:0.005, CH1: 15, CH2: 20, CH3: 25, TRAIN_TOTAL=500
+# f = open("PixelHopUniform_singPH.pkl", 'rb')  # 9 * 9
+f = open("/mnt/zhengwen/image_steganalysis/dataset/codes/PixelHopUniform_singPH.pkl", 'rb')
+p2 = pickle.load(f)
+f.close()
+
+f_ori_train_img = []
+f_steg_train_img = []
+ori_img_path = r'/mnt/zhengwen/new_trial/test_BOSSbase_reverse'
+steg_img_path = r'/mnt/zhengwen/new_trial/test_bossbase_S_UNIWARD_05_reverse'
+file_names = os.listdir(ori_img_path)
+file_names.sort(key=lambda x: int(x[:-4]))
+
+count = 0
+for file_name in file_names:
+    ori_img = cv2.imread(os.path.join(ori_img_path, file_name), 0)[:, :, None]
+    steg_img = cv2.imread(os.path.join(steg_img_path, file_name), 0)[:, :, None]
+    f_ori_train_img.append(ori_img)
+    f_steg_train_img.append(steg_img)
+    count += 1
+
+# FEATURE EXTRACTION
+f_ori_train_img = np.array(f_ori_train_img)
+f_steg_train_img = np.array(f_steg_train_img)
+diff_map = np.squeeze(f_ori_train_img.astype("double") - f_steg_train_img.astype("double"))
+f_ori_context = p2.transform(f_ori_train_img)
+f_steg_context = p2.transform(f_steg_train_img)
+counts = p2.counts
+diff_map = diff_sample(diff_map)
+
+f_ori_context_0 = f_ori_context[0][:, :, :, 1:]
+f_steg_context_0 = f_steg_context[0][:, :, :, 1:]
+
+ori_feature_1 = []
+stego_feature_1 = []
+for k in range(diff_map.shape[0]):
+    for i in range(diff_map.shape[1]):
+        for j in range(diff_map.shape[2]):
+            if diff_map[k, i, j] != 0:
+                pos_1 = (k, i, j)
+                pos_2 = (k, i - 1 if i - 1 >= 0 else -(i - 1), j - 1 if j - 1 >= 0 else -(j - 1))
+                pos_3 = (k, i - 1 if i - 1 >= 0 else -(i - 1), j)
+                pos_4 = (k, i - 1 if i - 1 >= 0 else -(i - 1), j + 1 if j + 1 < diff_map.shape[2] else diff_map.shape[2] - (j + 1 - diff_map.shape[2] + 1))
+                pos_5 = (k, i, j - 1 if j - 1 >= 0 else -(j - 1))
+                pos_6 = (k, i, j + 1 if j + 1 < diff_map.shape[2] else diff_map.shape[2] - (j + 1 - diff_map.shape[2] + 1))
+                pos_7 = (k, i + 1 if i + 1 < diff_map.shape[1] else diff_map.shape[1] - (i + 1 - diff_map.shape[1] + 1), j - 1 if j - 1 >= 0 else -(j - 1))
+                pos_8 = (k, i + 1 if i + 1 < diff_map.shape[1] else diff_map.shape[1] - (i + 1 - diff_map.shape[1] + 1), j)
+                pos_9 = (k, i + 1 if i + 1 < diff_map.shape[1] else diff_map.shape[1] - (i + 1 - diff_map.shape[1] + 1), j + 1 if j + 1 < diff_map.shape[2] else diff_map.shape[2] - (j + 1 - diff_map.shape[2] + 1))
+                ori_feature_1.append(
+                    np.concatenate(
+                        (f_ori_context_0[pos_1], f_ori_context_0[pos_2], f_ori_context_0[pos_3],
+                         f_ori_context_0[pos_4], f_ori_context_0[pos_5], f_ori_context_0[pos_6],
+                         f_ori_context_0[pos_7], f_ori_context_0[pos_8], f_ori_context_0[pos_9],), axis=0
+                    )
+                )
+                stego_feature_1.append(
+                    np.concatenate(
+                        (f_steg_context_0[pos_1], f_steg_context_0[pos_2], f_steg_context_0[pos_3],
+                         f_steg_context_0[pos_4], f_steg_context_0[pos_5], f_steg_context_0[pos_6],
+                         f_steg_context_0[pos_7], f_steg_context_0[pos_8], f_steg_context_0[pos_9],), axis=0
+                    )
+                )
+ori_feature_1 = np.array(ori_feature_1)
+stego_feature_1 = np.array(stego_feature_1)
+# np.save("week8_train_ori_context_1_PH4_RETRAINED.npy", ori_feature_1)      # 9 * 9
+# np.save("week8_train_steg_context_1_PH4_RETRAINED.npy", stego_feature_1)   # 9 * 9
+# np.save("week8_train_ori_context_1_PH4_RETRAINED_7_7_reverse.npy", ori_feature_1)     # 7 * 7
+# np.save("week8_train_steg_context_1_PH4_RETRAINED_7_7_reverse.npy", stego_feature_1)  # 7 * 7
+
+np.save("week8_test_ori_context_1_PH4_RETRAINED_7_7_reverse.npy", ori_feature_1)
+np.save("week8_test_steg_context_1_PH4_RETRAINED_7_7_reverse.npy", stego_feature_1)
+
+#########
+# S & L #
+#########
+ori_feature_1 = np.load("week8_train_ori_context_1_PH4_RETRAINED_7_7.npy")
+stego_feature_1 = np.load("week8_train_steg_context_1_PH4_RETRAINED_7_7.npy")
+idx = np.random.permutation(len(ori_feature_1))
+ori_feature_1 = ori_feature_1[idx]
+stego_feature_1 = stego_feature_1[idx]
+
+CHANNEL_RANGE = [i * 80 for i in range(10)]
+
+param = {
+    "n_estimators": [1000],
+    'learning_rate': stats.uniform(0.01, 0.19),
+    'subsample': stats.uniform(0.3, 0.6),
+    'max_depth': [4, 5, 6, 7, 8],
+    'colsample_bytree': stats.uniform(0.5, 0.4),
+    'min_child_weight': [1, 2, 3, 4, 5]
+    }
+
+folds = 5
+iter = 5
+clf_list = []
+np.random.seed(23)
+
+# for i in range(1, len(CHANNEL_RANGE)):
+#     print(i)
+#     train_ori_vec = ori_feature_1[:, CHANNEL_RANGE[i - 1]: CHANNEL_RANGE[i]]
+#     train_steg_vec = stego_feature_1[:, CHANNEL_RANGE[i - 1]: CHANNEL_RANGE[i]]
+#     train_sample = np.concatenate((train_ori_vec, train_steg_vec), axis=0)
+#     train_label = np.concatenate((0 * np.ones(len(train_ori_vec)), 1 * np.ones(len(train_steg_vec))), axis=0)
+#     # XGB
+#     xgb = XGBClassifier(
+#         n_estimators=1000,
+#         learning_rate=0.1,
+#         min_child_weight=5,
+#         max_depth=4,
+#         gamma=0.1,
+#         subsample=0.7,
+#         colsample_bytree=0.7
+#     )
+#     xgb.fit(train_sample, train_label)
+#     clf_list.append(xgb)
+#     print("TRAIN SCORE:", xgb.score(train_sample, train_label))
+#     print("end", i)
+
+# f = open("ensemble_clf.pkl", "wb")  # for 3 pixelHOP with 1000 training samples
+# f = open("ensemble_clf_singPH1.pkl", "wb")  # 9 * 9
+# f = open("ensemble_clf_singPH1_7_7.pkl", "wb")
+
+train_ori_vec = ori_feature_1
+train_steg_vec = stego_feature_1
+train_sample = np.concatenate((train_ori_vec, train_steg_vec), axis=0)
+train_label = np.concatenate((0 * np.ones(len(train_ori_vec)), 1 * np.ones(len(train_steg_vec))), axis=0)
 
 f = open("single_singPH1_7_7_reverse.pkl", "rb")
 xgb_single = pickle.load(f)
 f.close()
 
-f = open("/mnt/zhengwen/image_steganalysis/dataset/codes/PixelHopUniform_singPH_7_7_reverse.pkl", 'rb')
-p2 = pickle.load(f)
-f.close()
+print("TEST SCORE:", xgb_single.score(train_sample, train_label))
 
-folds = 5
-param_comb = 20
-np.random.seed(23)
-
-
-test_f_ori_vectors = np.load("week8_test_ori_feature_vec_PH4.npy")
-test_f_steg_vectors = np.load("week8_test_steg_feature_vec_PH4.npy")
-
-test_label = np.concatenate((0 * np.ones(len(test_f_ori_vectors)), 1 * np.ones(len(test_f_steg_vectors))), axis=0)
-
-test_pred_prob = []
-
-test_ori_vec = test_f_ori_vectors
-test_steg_vec = test_f_steg_vectors
-test_sample = np.concatenate((test_ori_vec, test_steg_vec), axis=0)
-
-clf = xgb_single
-
-# Final Classifier
-
-train_pred_prob = np.array(train_pred_prob)
-test_pred_prob = np.array(test_pred_prob)
-
-train_pred_prob = train_pred_prob.transpose()
-test_pred_prob = test_pred_prob.transpose()
-
-idx = np.random.permutation(len(train_pred_prob))
-train_pred_prob = train_pred_prob[idx]
-train_label = train_label[idx]
-
-params = {
-    'min_child_weight': [1, 2, 4, 5, 6, 7, 8, 10, 11, 14, 15, 17, 21],
-    'gamma':            [0.5, 1, 1.5, 2, 5],
-    'subsample':        [0.6, 0.8, 1.0],
-    'colsample_bytree': [0.6, 0.8, 1.0],
-    'learning_rate':    [0.1, 0.01, 0.2]
-}
-
-folds = 5
-param_comb = 10
-np.random.seed(23)
-
-xgb = XGBClassifier()
-# K-Fold
-skf = StratifiedKFold(n_splits=folds, shuffle=True, random_state=1001)
-random_search = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, scoring='roc_auc',
-                                   n_jobs=-1, cv=skf.split(train_pred_prob, train_label), random_state=1001)
-random_search.fit(train_pred_prob, train_label)
-best_final = random_search.best_estimator_
-
-f = open("final_XG_BOOST", "wb")
-pickle.dump(best_final, f)
-f.close()
-
-print("TRAIN SCORE:", best_final.score(train_pred_prob, train_label))
-print("TEST SCORE:", best_final.score(test_pred_prob, test_label))
