@@ -1,15 +1,10 @@
 import os
 import pickle
-from pixelhop2 import Pixelhop2
-import pickle
 import numpy as np
 import cv2
-from xgboost import XGBClassifier
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.model_selection import StratifiedKFold
 from skimage.measure import block_reduce
 from skimage.util import view_as_windows
-from sklearn.svm import SVC
+
 
 def Shrink(X, shrinkArg, max_pooling=True, padding=True):
     if max_pooling:

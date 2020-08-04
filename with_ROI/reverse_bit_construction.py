@@ -1,10 +1,6 @@
 import os
-import pickle
 import numpy as np
 import cv2
-from pixelhop2 import Pixelhop2
-from skimage.measure import block_reduce
-from skimage.util import view_as_windows
 
 #########################################################
 # STEP 1: TRAIN PIXELHOP BY STEGO IMAGE AND COVER IMAGE #
