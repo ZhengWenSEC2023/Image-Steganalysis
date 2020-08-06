@@ -62,10 +62,7 @@ class cwSaab():
     def SaabTransform(self, X, saab, train, layer):
         shrinkArg, SaabArg = self.shrinkArgs[layer], self.SaabArgs[layer]
         assert ('func' in shrinkArg.keys()), "shrinkArg must contain key 'func'!"
-        if layer != 0:
-            X = shrinkArg['func'](X, shrinkArg, max_pooling=True)
-        else:
-             X = shrinkArg['func'](X, shrinkArg, max_pooling=False)
+        X = shrinkArg['func'](X, shrinkArg)
         S = list(X.shape)
         X = X.reshape(-1, S[-1])
         if SaabArg['num_AC_kernels'] != -1:
