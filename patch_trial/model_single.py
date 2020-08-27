@@ -4,7 +4,7 @@ import pickle
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from pixelhop2 import Pixelhop2
+from final_pixel_pipeline.pixelhop2 import Pixelhop2
 from xgboost import XGBClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import RandomizedSearchCV

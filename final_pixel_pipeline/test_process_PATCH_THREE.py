@@ -1,15 +1,5 @@
-from pixelhop2 import Pixelhop2
-import gc
 import pickle
 import numpy as np
-import cv2
-from skimage.measure import block_reduce
-from skimage.util import view_as_windows
-from sklearn.svm import SVC
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.model_selection import StratifiedKFold
-from xgboost import XGBClassifier
-from scipy import stats
 
 #########################################################
 #   STEP 2: EXTRACT FEATURES BY TRAINED PIXELHOP UNIT   #

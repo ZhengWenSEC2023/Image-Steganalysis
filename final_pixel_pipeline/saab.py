@@ -5,7 +5,7 @@
 
 import numpy as np
 
-from myPCA import myPCA
+from final_pixel_pipeline.myPCA import myPCA
 class Saab():
     def __init__(self, num_kernels=-1, useDC=True, needBias=True, isInteger=False, bits=8, opType='int64'):
         self.par = None

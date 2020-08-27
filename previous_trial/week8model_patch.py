@@ -16,7 +16,7 @@ import numpy as np
 from skimage.util import view_as_windows
 import pickle
 from skimage.measure import block_reduce
-from pixelhop2 import Pixelhop2
+from final_pixel_pipeline.pixelhop2 import Pixelhop2
 
 
 original_path = r'/mnt/zhengwen/new_trial/BOSSbase_resize'
