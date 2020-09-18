@@ -52,6 +52,8 @@ for image_name in image_names:
     ori_block = skimage.util.view_as_blocks(ori_image, (32, 32))
     stego_block = skimage.util.view_as_blocks(stego_image, (32, 32))
     total_different = np.sum(ori_image != stego_image)
+
+    # select patches with more stego points
     for i in range(8):
         for j in range(8):
             cur_ori_block = ori_block[i, j]
@@ -69,6 +71,14 @@ stego_vectors = np.array(stego_vectors).astype('double') / 255
 
 np.save("/mnt/zhengwen/new_trial/original_vectors.npy", original_vectors)
 np.save("/mnt/zhengwen/new_trial/stego_vectors.npy", stego_vectors)
+
+
+
+
+
+
+
+
 
 def ShrinkAvg(X, shrinkArg):
     win = shrinkArg['win']

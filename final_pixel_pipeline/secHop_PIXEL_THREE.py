@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 import cv2
-from final_pixel_pipeline.pixelhop2 import Pixelhop2
+from Cluster_SIFT.pixelhop2 import Pixelhop2
 from skimage.measure import block_reduce
 from skimage.util import view_as_windows
 import gc

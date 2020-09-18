@@ -7,7 +7,7 @@
 import numpy as np 
 from sklearn.decomposition import PCA
 
-from final_pixel_pipeline.saab import Saab
+from Cluster_SIFT.saab import Saab
 
 class cwSaab():
     def __init__(self, depth=1, energyTH=0.01, SaabArgs=None, shrinkArgs=None, concatArg=None, splitMode=2, cwHop1=False):

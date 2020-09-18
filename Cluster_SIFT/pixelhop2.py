@@ -1,5 +1,5 @@
 # 2020.04.14
-from final_pixel_pipeline.cwSaab import cwSaab
+from Cluster_SIFT.cwSaab import cwSaab
 import numpy as np
 
 class Pixelhop2(cwSaab):

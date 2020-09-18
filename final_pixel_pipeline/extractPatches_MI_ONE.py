@@ -2,14 +2,9 @@ import os
 import pickle
 import numpy as np
 import cv2
-from final_pixel_pipeline.pixelhop2 import Pixelhop2
+from Cluster_SIFT.pixelhop2 import Pixelhop2
 from skimage.util import view_as_windows
 from sklearn.feature_selection import mutual_info_regression
-
-#######################################################################
-# STEP 1: TRAIN PIXELHOP BY STEGO IMAGE ONLY CONTAINING STEGO PATCHES #
-#    TRAINED PIXELHOP UNIT IS SAVED (A SINGLE PIXELHOP IS TRAINED)    #
-#######################################################################
 
 P_TRAIN_NUM_TOTAL = 6000
 
